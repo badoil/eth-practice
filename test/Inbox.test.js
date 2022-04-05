@@ -11,17 +11,28 @@ let inbox;
 beforeEach( async () => {
     // get a list of all accounts
     accounts = await web3.eth.getAccounts();
-    inbox = await new web3.eth.Contract(JSON.parse(interface))
-        .deploy({ data: bytecode, arguments: ['hi, there']})
-        .send({ from: accounts[0], gas: '1000000'});
+    inbox = await new web3.eth.Contract(JSON.parse(interface))  // 솔리디티가 컴파일되면서 만든 인터페이스를 제이슨에서 자바스크립트 오브젝트로 파싱
+        .deploy({ data: bytecode, arguments: ['hi, there']})    // 우리가 만든 솔리디티 코드가 컨트랙트이고 이거를 바이트코드로 보냄. 그리고 그 생성자의 인자를 'hi, there'로 한것임, 즉 배포할 객체를 만듬
+        .send({ from: accounts[0], gas: '1000000'});            // 만든 객체를 여기서 보냄, 웹3에서 네트워크로 보냄, 결국 inbox에 컨트랙트의 내용들이 담기는 것
 
     // use one of those accounts to deploy the contract
 })
 
 describe('Inbox', () => {
     it('deploys a contract', () => {
-        console.log('inbox:', inbox);
+        assert.ok(inbox.options.address); // assert.ok : 이 객체가 존재한다
     });
+
+    it('has a default message', async () => {
+        const message = await inbox.methods.message().call();
+        assert.equal(message, 'hi, there');
+    })
+
+    it('can change the message', async() => {
+        await inbox.methods.setMessage('bye').send({ from: accounts[0] });
+        const message = await inbox.methods.message().call();
+        assert.equal(message, 'bye');
+    })
 });
 
 
