@@ -1,7 +1,8 @@
 // deploy code will go here
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const Web3 = require('web3');
-const { interface, bytecode } = require('./compile');
+// const { interface, bytecode } = require('./compile');
+const { abi, evm } = require('./compile');
 
 const provider = new HDWalletProvider(
     'cloud dice gold ignore estate portion keen carbon wall pen believe sudden', 
@@ -12,9 +13,13 @@ const deploy = async() => {
     const account = await web3.eth.getAccounts();
     console.log('account: ', account[0]);
 
-    const result = await new web3.eth.Contract(JSON.parse(interface))
-                    .deploy({ data: bytecode, arguments: ['hi, there']})
-                    .send({ from: account[0], gas: '1000000'})
+    // const result = await new web3.eth.Contract(JSON.parse(interface))
+    //                 .deploy({ data: bytecode, arguments: ['hi, there']})
+    //                 .send({ from: account[0], gas: '1000000'})
+    const result = await new web3.eth.Contract(abi)
+    .deploy({ data: evm.bytecode.object, arguments: ['hi, there'] })
+    .send({ gas: '1000000', from: accounts[0] });
+
             
     console.log('address: ', result.options.address);
     provider.engine.stop();     // to prevent hanging deployment
