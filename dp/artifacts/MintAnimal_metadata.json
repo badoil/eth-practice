@@ -88,6 +88,25 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "animalTypes",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "to",
 						"type": "address"
@@ -569,10 +588,10 @@
 			]
 		},
 		"MintAnimalToken.sol": {
-			"keccak256": "0x143cb7a129a18300406a0bb9be1e110dc615e632d2373db2332d1209a0e60659",
+			"keccak256": "0x79f85ce2ab3a3ce90c5a0d61aced7bdd83b11bf58e5b2a8fe7926621cd14a01a",
 			"urls": [
-				"bzz-raw://e933ba7bc7a9ecc2394fb40b4c82da5d08025ecb6898798473a7133419329d5a",
-				"dweb:/ipfs/QmSWnrk73jrAx8k2bjpNy9iTasrqvKtnDvBkZr5VY67Pwa"
+				"bzz-raw://c09c7aadb94c300383510ad3f08585a645613761098db54812758a83b890a7b5",
+				"dweb:/ipfs/QmTrhXRm4pyJtvaokmLbrGQL7yBHV8uq7ATLPqDVPe8rbv"
 			]
 		}
 	},
