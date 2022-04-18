@@ -7,14 +7,6 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
         lottery = await Lottery.new();      // 테스트환경에서 새롭게 배포한 컨트랙트
     })
 
-    it('basic', async() => {
-        console.log('basic');
-        let value = await lottery.getSomeValue();
-        let owner = await lottery.owner();
-        console.log('value: ', value);
-        console.log('owner: ', owner);
-    })
-
     it('getPod should return current pod value', async() => {
         let pod = await lottery.getPot();
         console.log('pod: ', pod);
