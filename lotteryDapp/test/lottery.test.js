@@ -17,7 +17,7 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
         assert.equal(pod, 0);
     })
 
-    describe.only('Bet', function() {
+    describe('Bet', function() {
         it('shold fail when the money is lower than 0.005 eth', async() => {
             // fail transaction
             await assertRevert(lottery.bet('0xab', {from: user1, value: 4000000000000000}));
@@ -44,6 +44,28 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
             // check logs
             await expectEvent.inLogs(receipt.logs, 'BET');
 
+        })
+    })
+
+    describe.only('isMatch', function() {
+        let blockHash = '0xabb3d77bf528a9bd0326882b380b3615838169c15599dbbd4b09f07e107d6411';
+
+        it('shoud be win when the two character is same', async() => {
+            let isMatch = await lottery.isMatch('0xab', blockHash);
+            console.log('isMatch:', isMatch);
+            assert.equal(isMatch, 1);
+        })
+
+        it('shoud be fail when the two character is not same', async() => {
+            let isMatch = await lottery.isMatch('0xcd', blockHash);
+            console.log('isMatch:', isMatch);
+            assert.equal(isMatch, 0);
+        })
+
+        it('shoud be win when the two character is same', async() => {
+            let isMatch = await lottery.isMatch('0xac', blockHash);
+            console.log('isMatch:', isMatch);
+            assert.equal(isMatch, 2);
         })
     })
 })

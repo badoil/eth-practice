@@ -6,10 +6,8 @@ contract Lottery {
     struct BetInfo {
         uint256 answerBlockNumber;
         address payable bettor;
-        bytes challenges;
+        bytes1 challenges;
     }
-
-    enum BlockStatus {Checkable, NotRevealed, BlockLimitPassed}
 
     uint256 private _head;          // queue 구조를 만들고, 이를 hashMap과 함께 사용
     uint256 private _tail;
@@ -23,7 +21,10 @@ contract Lottery {
 
     uint256 private _pot;
 
-    event BET(uint256 index, address bettor, uint256 amount, bytes challenges, uint256 answerBlockNumber);
+    event BET(uint256 index, address bettor, uint256 amount, bytes1 challenges, uint256 answerBlockNumber);
+
+    enum BlockStatus {Checkable, NotRevealed, BlockLimitPassed}
+    enum BettingResult {Fail, Win, Draw}
 
     constructor() public {
         owner = msg.sender;
@@ -39,7 +40,7 @@ contract Lottery {
      * @param challenges  유저가 보내는 1바이트 글자
      * @return 함수가 잘 수행되어쓴지 확인하는 boolean 값
      */
-    function bet(bytes memory challenges) public payable returns(bool) {    // 트랜잭션 기본 가스량 21000 가스
+    function bet(bytes1 challenges) public payable returns(bool) {    // 트랜잭션 기본 가스량 21000 가스
         // check the proper ith is sent
         require(msg.value == BET_AMOUNT, 'not enough money');
 
@@ -104,16 +105,51 @@ contract Lottery {
         }
     }
 
+    /**
+     * @dev 정답확인
+     * @param challenges  베팅 글자
+     * @param answer 블록해쉬값
+     * @return 정답결과
+     */
+    function isMatch(bytes1 challenges, bytes32 answer) public pure returns(BettingResult) {
+        bytes1 c1 = challenges;
+        bytes1 c2 = challenges;
+
+        bytes1 a1 = answer[0];
+        bytes1 a2 = answer[0];
+
+        c1 = c1 >> 4; // 0xab -> 0x0a
+        c1 = c1 << 4; // 0x0a -> 0xa0
+
+        a1 = a1 >> 4;
+        a1 = a1 << 4;
+
+        c2 = c2 << 4; // 0xab -> 0xb0
+        c2 = c2 >> 4; // 0xb0 -> 0x0b
+
+        a2 = a2 << 4;
+        a2 = a2 >> 4;
+
+        if (c1 == a1 && c2 == a2) {
+            return BettingResult.Win;
+        }
+
+        if (c1 == a1 || c2 == a2) {
+            return BettingResult.Draw;
+        }
+
+    }
+
     //distribute, check the answer, give the money to the winner
 
-    function getBetInfo(uint256 index) public view returns(uint256 answerBlockNumber, address bettor, bytes memory challenges) {
+    function getBetInfo(uint256 index) public view returns(uint256 answerBlockNumber, address bettor, bytes1 challenges) {
         BetInfo memory b = _bets[index];
         answerBlockNumber = b.answerBlockNumber;
         bettor = b.bettor;
         challenges = b.challenges;
     }
 
-    function pushBet(bytes memory challenges) internal returns(bool) {    // 큐에 집어넣음, 총 60000가스
+    function pushBet(bytes1 challenges) internal returns(bool) {    // 큐에 집어넣음, 총 60000가스
         BetInfo memory b;
         b.answerBlockNumber = block.number + BET_BLOCK_INTERVAL;    // 32bytes  20000 가스
         b.bettor = msg.sender;                                      // 20bytes  20000 가스
