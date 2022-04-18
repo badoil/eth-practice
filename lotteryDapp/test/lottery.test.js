@@ -14,4 +14,10 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
         console.log('value: ', value);
         console.log('owner: ', owner);
     })
+
+    it('getPod should return current pod value', async() => {
+        let pod = await lottery.getPot();
+        console.log('pod: ', pod);
+        assert.equal(pod, 0);
+    })
 })
