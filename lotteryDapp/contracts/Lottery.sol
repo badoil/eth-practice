@@ -19,7 +19,7 @@ contract Lottery {
     uint256 constant internal BET_BLOCK_INTERVAL = 3;
     uint256 constant internal BET_AMOUNT = 5 * 10**15;
 
-    uint256 private _pot;
+    uint256 private _pot = 0;
     bool private mode = false; // false: use answer for test, true: use real block hash
     bytes32 public answerForTest;
 
@@ -36,8 +36,21 @@ contract Lottery {
         owner = msg.sender;
     }
 
-    function getPot() public view returns(uint256 pot) {
+    function getPot() public view returns(uint256) {
         return _pot;
+    }
+
+    /**
+     * @dev 베팅과 정답체크를 동시에 한다. 유저는 0.005 이더를 보내고, 1바이트 글자를 보낸다
+     *  큐에 저장된 베팅정보는 이후 distribute 함수에서 해결된다
+     * @param challenges  유저가 보내는 1바이트 글자
+     * @return 함수가 잘 수행되었는지 확인하는 boolean 값
+     */
+    function betAndDistribute(bytes1 challenges) public payable returns (bool) {
+        bet(challenges);
+        distribute();
+
+        return true;
     }
 
     /**
@@ -47,7 +60,7 @@ contract Lottery {
      * @return 함수가 잘 수행되어쓴지 확인하는 boolean 값
      */
     function bet(bytes1 challenges) public payable returns(bool) {    // 트랜잭션 기본 가스량 21000 가스
-        // check the proper ith is sent
+        // check the proper eth is sent
         require(msg.value == BET_AMOUNT, 'not enough money');
 
         // push bet to the queue
@@ -164,7 +177,7 @@ contract Lottery {
         return true; 
     }
 
-    function getAnswerBlockHash(uint256 answerBlockNumber) internal view returns(bytes32 answer) {
+    function getAnswerBlockHash(uint256 answerBlockNumber) internal view returns(bytes32) {
         return mode ? blockhash(answerBlockNumber): answerForTest;
     }
 

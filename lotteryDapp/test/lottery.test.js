@@ -6,6 +6,7 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
     let lottery;
     let betAmount = 5 * 10**15;
     let bet_block_interval = 3;
+    let betAmountBN = new web3.utils.BN('5000000000000000');
 
     beforeEach(async() => {
         lottery = await Lottery.new();      // 테스트환경에서 새롭게 배포한 컨트랙트
@@ -47,7 +48,7 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
         })
     })
 
-    describe.only('isMatch', function() {
+    describe('isMatch', function() {
         let blockHash = '0xabb3d77bf528a9bd0326882b380b3615838169c15599dbbd4b09f07e107d6411';
 
         it('shoud be win when the two character is same', async() => {
@@ -66,6 +67,52 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
             let isMatch = await lottery.isMatch('0xac', blockHash);
             console.log('isMatch:', isMatch);
             assert.equal(isMatch, 2);
+        })
+    })
+
+    describe('distribute', function() {
+        describe('checkable', function() {
+            it.only('win', async() => {
+                // 테스트용 정답을 설정
+                await lottery.setAnswerForTest('0xabb3d77bf528a9bd0326882b380b3615838169c15599dbbd4b09f07e107d6411', {from: deployer});
+
+                await lottery.betAndDistribute('0xef', {from: user2, value: betAmount}); // block number 1 -> block number 4
+                await lottery.betAndDistribute('0xef', {from: user2, value: betAmount}); // block number 2 -> block number 5
+                await lottery.betAndDistribute('0xef', {from: user1, value: betAmount}); // block number 3 -> block number 6
+                await lottery.betAndDistribute('0xef', {from: user2, value: betAmount}); // block number 4 -> block number 7
+                await lottery.betAndDistribute('0xef', {from: user2, value: betAmount}); // block number 5 -> block number 8
+                await lottery.betAndDistribute('0xef', {from: user2, value: betAmount}); // block number 6 -> block number 9
+
+                let potBefore = await lottery.getPot(); // 0.01 eth, user2가 두번 베팅해서 팟에 0.005 * 2 들어감
+                let user1BalanceBefore = await web3.eth.getBalance(user1);
+
+                await lottery.betAndDistribute('0xef', {from: user2, value: betAmount}); // user1 이 정답을 맞추는데, 이것을 블록넘버 7인 이때 알 수 있음
+
+                let potAfter = await lottery.getPot(); // 0.01 eth, user2가 두번 베팅해서 팟에 0.005 * 2 들어감
+                let user1BalanceAfter = await web3.eth.getBalance(user1);
+
+                // 팟 변화량 확인
+                console.log('potBefore: ', potBefore.toString());
+                // assert.equal(potBefore.toString(), new web3.utils.BN('10000000000000000').toString());
+                // 위너 밸런스 확인
+
+            })
+
+            it('draw', async() => {
+
+            })
+
+            it('fail', async() => {
+
+            })
+        })
+
+        describe('not revealed(not mined)', function() {
+            
+        })
+
+        describe('block limit is passed', function() {
+            
         })
     })
 })
