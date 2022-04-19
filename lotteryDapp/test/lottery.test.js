@@ -76,6 +76,7 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
                 // 테스트용 정답을 설정
                 await lottery.setAnswerForTest('0xabb3d77bf528a9bd0326882b380b3615838169c15599dbbd4b09f07e107d6411', {from: deployer});
 
+                // ganache-cli 의 경우, 트랜잭션 하나를 만들면 블록이 하나씩 생성되기 때문에 아래의 betAndDistribute 트랜잭션이 곧 블록이 되는 것
                 await lottery.betAndDistribute('0xef', {from: user2, value: betAmount}); // block number 1 -> block number 4
                 await lottery.betAndDistribute('0xef', {from: user2, value: betAmount}); // block number 2 -> block number 5
                 await lottery.betAndDistribute('0xef', {from: user1, value: betAmount}); // block number 3 -> block number 6
@@ -99,11 +100,58 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
             })
 
             it('draw', async() => {
+                // 한 글자 다 맞았을 때
+                await lottery.setAnswerForTest('0xabec17438e4f0afb9cc8b77ce84bb7fd501497cfa9a1695095247daa5b4b7bcc', {from:deployer})
+                
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 1 -> 4
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 2 -> 5
+                await lottery.betAndDistribute('0xaf', {from:user1, value:betAmount}) // 3 -> 6
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 4 -> 7
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 5 -> 8
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 6 -> 9
+                
+                let potBefore = await lottery.getPot(); //  == 0.01 ETH
+                let user1BalanceBefore = await web3.eth.getBalance(user1);
+                
+                let receipt7 = await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 7 -> 10 // user1에게 pot이 간다
+
+                let potAfter = await lottery.getPot(); // == 0.01 ETH
+                let user1BalanceAfter = await web3.eth.getBalance(user1); // == before + 0.005 ETH
+                
+                // pot 의 변화량 확인
+                assert.equal(potBefore.toString(), potAfter.toString());
+
+                // user(winner)의 밸런스를 확인
+                user1BalanceBefore = new web3.utils.BN(user1BalanceBefore);
+                assert.equal(user1BalanceBefore.add(betAmountBN).toString(), new web3.utils.BN(user1BalanceAfter).toString())
 
             })
 
             it('fail', async() => {
+                // 다 틀렸을 때
+                await lottery.setAnswerForTest('0xabec17438e4f0afb9cc8b77ce84bb7fd501497cfa9a1695095247daa5b4b7bcc', {from:deployer})
+                
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 1 -> 4
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 2 -> 5
+                await lottery.betAndDistribute('0xef', {from:user1, value:betAmount}) // 3 -> 6
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 4 -> 7
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 5 -> 8
+                await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 6 -> 9
+                
+                let potBefore = await lottery.getPot(); //  == 0.01 ETH
+                let user1BalanceBefore = await web3.eth.getBalance(user1);
+                
+                let receipt7 = await lottery.betAndDistribute('0xef', {from:user2, value:betAmount}) // 7 -> 10 // user1에게 pot이 간다
 
+                let potAfter = await lottery.getPot(); // == 0.015 ETH
+                let user1BalanceAfter = await web3.eth.getBalance(user1); // == before
+                
+                // pot 의 변화량 확인
+                assert.equal(potBefore.add(betAmountBN).toString(), potAfter.toString());
+
+                // user(winner)의 밸런스를 확인
+                user1BalanceBefore = new web3.utils.BN(user1BalanceBefore);
+                assert.equal(user1BalanceBefore.toString(), new web3.utils.BN(user1BalanceAfter).toString())
             })
         })
 
@@ -112,7 +160,7 @@ contract('Lottery', function([deployer, user1, user2]){     // ganache-cli -d -m
         })
 
         describe('block limit is passed', function() {
-            
+            // ganache-cli 의 evm_mine 쓰면 블럭을 강제로 생성시킬 수 있음, 그걸 사용해서 테스트 해야함
         })
     })
 })

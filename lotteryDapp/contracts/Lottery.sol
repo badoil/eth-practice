@@ -19,7 +19,7 @@ contract Lottery {
     uint256 constant internal BET_BLOCK_INTERVAL = 3;
     uint256 constant internal BET_AMOUNT = 5 * 10**15;
 
-    uint256 private _pot = 0;
+    uint256 private _pot;
     bool private mode = false; // false: use answer for test, true: use real block hash
     bytes32 public answerForTest;
 
@@ -153,6 +153,8 @@ contract Lottery {
         if (block.number > answerBlockNumber && block.number - BLOCK_LIMIT >= answerBlockNumber) {
             return BlockStatus.BlockLimitPassed;
         }
+
+        return BlockStatus.BlockLimitPassed;
     }
 
     function transferAfterPayingFee(address payable addr, uint256 amount) internal returns(uint256) {
