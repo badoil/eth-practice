@@ -215,7 +215,7 @@ contract Lottery {
         if (c1 == a1 || c2 == a2) {
             return BettingResult.Draw;
         }
-
+        return BettingResult.Fail;
     }
 
     //distribute, check the answer, give the money to the winner
