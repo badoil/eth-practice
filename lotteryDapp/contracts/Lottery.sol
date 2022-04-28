@@ -144,7 +144,7 @@ contract Lottery {
             return BlockStatus.Checkable;
         }
 
-        // 현재 블록이 생성중이라 당첨 여부를 알려 줄 수 없음
+        // 현재 블록(answerBlockNumber)이 생성중이라 당첨 여부를 알려 줄 수 없음
         if (block.number <= answerBlockNumber) {
             return BlockStatus.NotRevealed;
         }
